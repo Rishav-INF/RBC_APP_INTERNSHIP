@@ -2,14 +2,23 @@ package com.example.rbc_app
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -17,8 +26,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,43 +54,50 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.example.rbc_app.JobFormActivities.jobFormActivity
+import com.example.rbc_app.FreeLanceFormActivities.FreeLanceFormActivity
 import com.example.rbc_app.RoomDatabase.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
-class DetailedJob : ComponentActivity() {
+class DetailedFreelance : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            JobTheme {
+            MaterialTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFFF5F5F5)
+                    color = Color(0xFFF9F9F9)
                 ) {
-                    val jobId = intent.getIntExtra("job_id", -1)
-                    val jobName = intent.getStringExtra("jobName") ?: ""
-                    val jobDesc = intent.getStringExtra("jobDesc") ?: ""
-                    val companyName = intent.getStringExtra("companyName") ?: ""
-                    val companyLogoName = intent.getStringExtra("companyLogoName") ?: ""
-                    val jobType = intent.getStringExtra("jobType") ?: ""
-                    val jobLocation = intent.getStringExtra("jobLocation") ?: ""
+                    val freelanceId = intent.getIntExtra("freelance_id", 0)
+                    val freelanceEmpId = intent.getIntExtra("Empid", -1)
+                    val freelanceTitle = intent.getStringExtra("freelance_title") ?: ""
+                    val freelanceDesc = intent.getStringExtra("freelance_desc") ?: ""
+                    val companyName = intent.getStringExtra("freelance_company") ?: ""
+                    val companyLogoName = intent.getStringExtra("freelance_comp_logo") ?: ""
+                    val freelanceType = intent.getStringExtra("freelance_type") ?: ""
+                    val location = intent.getStringExtra("location") ?: ""
                     val preferredCandType = intent.getStringExtra("preferredCandType") ?: ""
-                    val jobStatus = intent.getStringExtra("jobStatus") ?: ""
+                    val status = intent.getStringExtra("Status") ?: ""
+                    val minSalary = intent.getStringExtra("min_salary") ?: ""
+                    val maxSalary = intent.getStringExtra("max_salary") ?: ""
 
-                    JobPostingApp(
-                        jobId = jobId,
-                        jobName = jobName,
-                        jobDesc = jobDesc,
+                    FreelancePostingApp(
+                        freelanceId = freelanceId,
+                        freelanceEmpId = freelanceEmpId,
+                        freelanceTitle = freelanceTitle,
+                        freelanceDesc = freelanceDesc,
                         companyName = companyName,
                         companyLogoName = companyLogoName,
-                        jobType = jobType,
-                        jobLocation = jobLocation,
+                        freelanceType = freelanceType,
+                        location = location,
                         preferredCandType = preferredCandType,
-                        jobStatus = jobStatus
+                        status = status,
+                        minSalary = minSalary,
+                        maxSalary = maxSalary
                     )
                 }
             }
@@ -78,67 +106,77 @@ class DetailedJob : ComponentActivity() {
 }
 
 @Composable
-fun JobTheme(content: @Composable () -> Unit) {
-    MaterialTheme(
-        colorScheme = lightColorScheme(
-            primary = Color(0xFF1976D2),
-            secondary = Color(0xFFFFC107),
-            background = Color(0xFFF5F5F5)
-        ),
-        content = content
+fun LoadAndDisplayImage(
+    imageName: String,
+    modifier: Modifier = Modifier
+) {
+    val painter = rememberAsyncImagePainter(
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(imageName)
+            .build()
+    )
+
+    Image(
+        painter = painter,
+        contentDescription = "Company Logo",
+        modifier = modifier,
+        contentScale = ContentScale.Crop
     )
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun JobPostingApp(
-    jobId: Int,
-    jobName: String,
-    jobDesc: String,
+fun FreelancePostingApp(
+    freelanceId: Int,
+    freelanceEmpId: Int,
+    freelanceTitle: String,
+    freelanceDesc: String,
     companyName: String,
     companyLogoName: String,
-    jobType: String,
-    jobLocation: String,
+    freelanceType: String,
+    location: String,
     preferredCandType: String,
-    jobStatus: String
+    status: String,
+    minSalary: String,
+    maxSalary: String
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        JobDetailHeader(
-            jobName = jobName,
+        FreelanceDetailHeader(
+            freelanceTitle = freelanceTitle,
             companyName = companyName,
             preferredCandType = preferredCandType,
             companyLogoName = companyLogoName,
-            jobLocation = jobLocation,
-            jobStatus = jobStatus,
-            jobId = jobId
+            location = location,
+            status = status,
+            freelanceId = freelanceId,
+            minSalary = minSalary,
+            maxSalary = maxSalary
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        JobDescriptionSection(
-            jobDesc = jobDesc,
-            jobType = jobType,
+        FreelanceDescriptionSection(
+            freelanceDesc = freelanceDesc,
+            freelanceEmpId = freelanceEmpId,
+            freelanceType = freelanceType,
             preferredCandType = preferredCandType,
-            jobId = jobId
+            freelanceId = freelanceId
         )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun JobDetailHeader(
-    jobName: String,
+fun FreelanceDetailHeader(
+    freelanceTitle: String,
     companyName: String,
     preferredCandType: String,
     companyLogoName: String,
-    jobLocation: String,
-    jobStatus: String,
-    jobId: Int
+    location: String,
+    status: String,
+    freelanceId: Int,
+    minSalary: String,
+    maxSalary: String
 ) {
     val context = LocalContext.current
     val currentDate = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date())
@@ -146,9 +184,9 @@ fun JobDetailHeader(
 
     LaunchedEffect(Unit) {
         CoroutineScope(Dispatchers.IO).launch {
-            val savedJobs = AppDatabase.getInstance(context).UserDao().getSavedJobs()
-            val savedList = savedJobs.split(",").filter { it.isNotEmpty() }
-            isSaved = savedList.contains(jobId.toString())
+            val savedFreelance = AppDatabase.getInstance(context).UserDao().getSavedFreelance()
+            val savedFreelanceList = savedFreelance.split(",").filter { it.isNotEmpty() }
+            isSaved = savedFreelanceList.contains(freelanceId.toString())
         }
     }
 
@@ -185,7 +223,7 @@ fun JobDetailHeader(
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text = jobName,
+                    text = freelanceTitle,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF333333)
@@ -208,14 +246,14 @@ fun JobDetailHeader(
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            painter = painterResource(id = android.R.drawable.ic_menu_mylocation),
+                            imageVector = Icons.Default.CheckCircle,
                             contentDescription = "Location",
                             modifier = Modifier.size(14.dp),
                             tint = Color(0xFF777777)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = jobLocation,
+                            text = location,
                             fontSize = 14.sp,
                             color = Color(0xFF777777)
                         )
@@ -234,26 +272,45 @@ fun JobDetailHeader(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Status chip
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(
-                        if (jobStatus == "Open") Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
-                    )
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            // Status and budget row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = jobStatus,
-                    fontSize = 14.sp,
-                    color = if (jobStatus == "Open") Color(0xFF2E7D32) else Color(0xFFC62828),
-                    fontWeight = FontWeight.Medium
-                )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            if (status == "Open") Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
+                        )
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = status,
+                        fontSize = 14.sp,
+                        color = if (status == "Open") Color(0xFF2E7D32) else Color(0xFFC62828),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFFFFF8E1))
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = "₹$minSalary - ₹$maxSalary",
+                        fontSize = 14.sp,
+                        color = Color(0xFFF57F17),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Save and date section
+            // Save and candidate type section
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -269,22 +326,22 @@ fun JobDetailHeader(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.clickable {
                         CoroutineScope(Dispatchers.IO).launch {
-                            val savedJobs = AppDatabase.getInstance(context).UserDao().getSavedJobs()
+                            val savedFreelance = AppDatabase.getInstance(context).UserDao().getSavedFreelance()
                             if (!isSaved) {
-                                val updated = if (savedJobs.isEmpty()) {
-                                    jobId.toString()
+                                val updatedFreelance = if (savedFreelance.isEmpty()) {
+                                    freelanceId.toString()
                                 } else {
-                                    "$savedJobs,$jobId"
+                                    "$savedFreelance,$freelanceId"
                                 }
                                 AppDatabase.getInstance(context).UserDao()
-                                    .updateSavedJobs(updated)
+                                    .updateSavedFreelance(updatedFreelance)
                                 isSaved = true
                             } else {
-                                val updated = savedJobs.split(",")
-                                    .filter { it != jobId.toString() }
+                                val updatedFreelance = savedFreelance.split(",")
+                                    .filter { it != freelanceId.toString() }
                                     .joinToString(",")
                                 AppDatabase.getInstance(context).UserDao()
-                                    .updateSavedJobs(updated)
+                                    .updateSavedFreelance(updatedFreelance)
                                 isSaved = false
                             }
                         }
@@ -324,13 +381,13 @@ fun JobDetailHeader(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun JobDescriptionSection(
-    jobDesc: String,
-    jobType: String,
+fun FreelanceDescriptionSection(
+    freelanceDesc: String,
+    freelanceEmpId: Int,
+    freelanceType: String,
     preferredCandType: String,
-    jobId: Int
+    freelanceId: Int
 ) {
     val context = LocalContext.current
 
@@ -346,58 +403,54 @@ fun JobDescriptionSection(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Section title
             Text(
-                text = "Job Description",
+                text = "Project Details",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF333333),
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            // About the Role
             Text(
-                text = "About the Role:",
+                text = "About the Project",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF444444),
-                modifier = Modifier.padding(bottom = 4.dp)
+                modifier = Modifier.padding(vertical = 8.dp)
             )
             Text(
-                text = jobDesc,
+                text = freelanceDesc,
                 fontSize = 14.sp,
                 color = Color(0xFF666666),
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Requirements section
             Text(
-                text = "Requirements:",
+                text = "Requirements",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF444444),
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(vertical = 8.dp)
             )
 
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
                     .background(Color(0xFFFFFDE7))
                     .padding(12.dp)
             ) {
-                RequirementItem("Job Type", jobType)
+                RequirementItem("Freelance Type", freelanceType)
                 RequirementItem("Preferred Candidate", preferredCandType)
-                RequirementItem("Job ID", jobId.toString())
+                RequirementItem("Project ID", freelanceId.toString())
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Quick Apply button
             Button(
                 onClick = {
-                    val intent = Intent(context, jobFormActivity::class.java)
-                    intent.putExtra("job_id", jobId)
+                    val intent = Intent(context, FreeLanceFormActivity::class.java)
+                    intent.putExtra("freelance_id", freelanceId)
+                    intent.putExtra("Empid", freelanceEmpId)
                     context.startActivity(intent)
                 },
                 modifier = Modifier
@@ -410,7 +463,7 @@ fun JobDescriptionSection(
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    text = "Quick Apply",
+                    text = "Apply Now",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -419,21 +472,60 @@ fun JobDescriptionSection(
     }
 }
 
+@Composable
+fun RequirementItem(label: String, value: String) {
+    Row(
+        modifier = Modifier.padding(vertical = 4.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Box(
+            modifier = Modifier
+                .size(6.dp)
+                .background(Color(0xFFFFC107), RoundedCornerShape(50))
+                .align(Alignment.CenterVertically)
+                .padding(top = 8.dp)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Column {
+            Text(
+                text = label,
+                fontSize = 14.sp,
+                color = Color(0xFF777777),
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                text = value,
+                fontSize = 14.sp,
+                color = Color(0xFF333333),
+                fontWeight = FontWeight.Normal,
+                modifier = Modifier.padding(top = 2.dp)
+            )
+        }
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewJobPostingApp() {
-    JobTheme {
-        JobPostingApp(
-            jobId = 111,
-            jobName = "MEP BIM Modeler",
-            jobDesc = "Matrix BIM and Design Solutions LLP is hiring an experienced MEP BIM Modeler...",
-            companyName = "Matrix Designs",
-            companyLogoName = "matrix_logo.png",
-            jobType = "Full-time",
-            jobLocation = "Pune",
-            preferredCandType = "Experienced Professionals",
-            jobStatus = "Active"
-        )
+fun PreviewFreelancePostingApp() {
+    MaterialTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = Color(0xFFF9F9F9)
+        ) {
+            FreelancePostingApp(
+                freelanceId = 222,
+                freelanceEmpId = 88,
+                freelanceTitle = "UI/UX Design Project",
+                freelanceDesc = "We're looking for a skilled UI/UX designer to create a mobile app interface...",
+                companyName = "DesignHub Inc",
+                companyLogoName = "designhub_logo.png",
+                freelanceType = "Project-based",
+                location = "Remote",
+                preferredCandType = "2+ years experience",
+                status = "Open",
+                minSalary = "15000",
+                maxSalary = "25000"
+            )
+        }
     }
 }

@@ -1,23 +1,22 @@
 package com.example.rbc_app.BottomNav.Screens
 
 import KtorClient
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -25,9 +24,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -40,20 +42,48 @@ import com.example.rbc_app.R
 class FreeLance : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val shrd = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).getString("Type","def")
+
         setContent {
-            InternshipsScreen(navController = rememberNavController())
+            MaterialTheme(
+                colorScheme = yellowColorScheme
+            ) {
+                FreeLanceScreen(navController = rememberNavController(),shrd)
+            }
         }
     }
 }
 
+private val yellowColorScheme = lightColorScheme(
+    primary = Color(0xFFFFD700), // Gold/yellow
+    onPrimary = Color.Black,
+    secondary = Color(0xFFFFFACD), // Lemon chiffon
+    onSecondary = Color.Black,
+    tertiary = Color(0xFFFFFFE0), // Light yellow
+    onTertiary = Color.Black,
+    surface = Color.White,
+    onSurface = Color.Black,
+    surfaceVariant = Color(0xFFFFF8E1), // Light yellowish white
+    onSurfaceVariant = Color(0xFF795548), // Brown for contrast
+    background = Color.White,
+    onBackground = Color.Black,
+    error = Color(0xFFB00020),
+    onError = Color.White,
+    primaryContainer = Color(0xFFFFECB3), // Light yellow container
+    onPrimaryContainer = Color.Black,
+    secondaryContainer = Color(0xFFFFF3E0), // Very light yellowish
+    onSecondaryContainer = Color.Black
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FreeLanceScreen(navController: NavController,) {
+fun FreeLanceScreen(navController: NavController,shrd:String?) {
     val context = LocalContext.current
-    var FreeLanceCardList = remember{ mutableListOf<KtorClient.FreeLanceCard>() }
-    var searchQueryState = remember{ mutableStateOf("") }
+    var FreeLanceCardList = remember { mutableListOf<KtorClient.FreeLanceCard>() }
+    var searchQueryState = remember { mutableStateOf("") }
     var searchValue = searchQueryState.value
 
-    val searchList=remember(FreeLanceCardList,searchValue) {
+    val searchList = remember(FreeLanceCardList, searchValue) {
         if (searchValue.isEmpty()) {
             FreeLanceCardList
         } else {
@@ -65,12 +95,15 @@ fun FreeLanceScreen(navController: NavController,) {
                         FreeLance.EstimatedDuration.contains(searchValue, ignoreCase = true) ||
                         FreeLance.Contact.contains(searchValue, ignoreCase = true) ||
                         FreeLance.location.contains(searchValue, ignoreCase = true) ||
-                        FreeLance.Status.contains(searchValue,ignoreCase = true)
+                        FreeLance.Status.contains(searchValue, ignoreCase = true)
             }
         }
     }
-    LaunchedEffect(Unit){ val FrLance = KtorClient.getFreeLanceList()
-        FreeLanceCardList.addAll(FrLance)}
+
+    LaunchedEffect(Unit) {
+        val FrLance = KtorClient.getFreeLanceList()
+        FreeLanceCardList.addAll(FrLance)
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -79,42 +112,158 @@ fun FreeLanceScreen(navController: NavController,) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(15.dp)
+                .padding(horizontal = 16.dp)
         ) {
+            // Enhanced Header with decorative elements
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp, bottom = 16.dp)
+                    .background(
+                        color = Color(0xFFFFF3E0), // Light yellow
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.logo),
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp)
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = "Freelance Opportunities",
+                    style = MaterialTheme.typography.headlineLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF795548) // Brown
+                    )
+                )
+            }
+
+            // Enhanced Search Bar
             TextField(
                 value = searchQueryState.value,
                 onValueChange = { searchQueryState.value = it },
-                modifier = Modifier.fillMaxWidth().padding(vertical=8.dp),
-                placeholder = { Text("Search FreeLance Opportunities by title, company or loaction") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+                    .shadow(elevation = 4.dp, shape = RoundedCornerShape(12.dp)),
+                placeholder = {
+                    Text(
+                        "Search by title, company or location",
+                        color = Color(0xFF795548).copy(alpha = 0.6f)
+                    )
+                },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = "Search"
+                        contentDescription = "Search",
+                        tint = Color(0xFFFFD700), // Gold
+                        modifier = Modifier.size(24.dp)
                     )
                 },
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = TextFieldDefaults.textFieldColors(
+                    containerColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black
+                ),
                 singleLine = true
             )
-            Spacer(Modifier.height(10.dp))
-            Button(
-                onClick = {
-                    context.startActivity(Intent(context, AddFreelanceWork::class.java))
-                }
-            ) {
-                Text("ADD FREELANCE OPPORTUNITIES")
-            }
-            Spacer(Modifier.height(10.dp))
-            Text(
-                text = "FreeLance Available",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(vertical = 20.dp)
-            )
 
-            LazyColumn(modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)){
-                items(searchList){
-                        freelance->
-                    FreelanceCard(freelance)
+            // Enhanced Add Opportunity Button
+            if(shrd=="Employer"){
+                Button(
+                    onClick = {
+                        context.startActivity(Intent(context, AddFreelanceWork::class.java))
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 24.dp)
+                        .height(52.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFFFD700), // Gold
+                        contentColor = Color.Black
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 4.dp,
+                        pressedElevation = 2.dp
+                    )
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Add Freelance Opportunity",
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            // Opportunities list
+            if (searchList.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(vertical = 48.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.logo),
+                        contentDescription = "No opportunities found",
+                        modifier = Modifier
+                            .size(140.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "No freelance opportunities found",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = Color(0xFF795548) // Brown
+                    )
+                    Text(
+                        text = "Try adjusting your search or add a new opportunity",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color(0xFF795548).copy(alpha = 0.6f),
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+            } else {
+                Column {
+                    Text(
+                        text = "Available Opportunities (${searchList.size})",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF795548) // Brown
+                        ),
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(searchList) { freelance ->
+                            // Original FreelanceCard remains unchanged
+                            FreelanceCard(freelance)
+                        }
+                    }
                 }
             }
         }
@@ -124,5 +273,7 @@ fun FreeLanceScreen(navController: NavController,) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewFreeLance() {
-    InternshipsScreen(navController = rememberNavController())
+    MaterialTheme(colorScheme = yellowColorScheme) {
+        FreeLanceScreen(navController = rememberNavController(),"def")
+    }
 }

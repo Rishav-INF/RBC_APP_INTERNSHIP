@@ -13,3 +13,13 @@ data class UserAddFormDetails(
     @Serializable(with = LocalDateTimeSerializer::class)
     var submitted_at: LocalDateTime = LocalDateTime.now()
 )
+
+@Serializable
+data class UserAddFormDetailsInternships(
+    var internship_id:Int,
+    var emp_id:Int,
+    var user_id:Int,
+    var field_details :String,
+    @Serializable(with = LocalDateTimeSerializer::class)
+    var submitted_at: LocalDateTime = LocalDateTime.now()
+)

@@ -1,6 +1,7 @@
 package com.example.rbc_app.login
 
 import KtorClient
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -99,6 +100,9 @@ class LoginSeeker : ComponentActivity() {
 
                         if (loginMessage.contains("Login successful")) {
                             withContext(Dispatchers.IO) {
+                                val sharedPref = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+                                val editor = sharedPref.edit()
+                                editor.putString("Type","Seeker")
                                 val db = AppDatabase.getInstance(context)
                                 val userDao = db.UserDao()
 
@@ -113,9 +117,12 @@ class LoginSeeker : ComponentActivity() {
                                     UserCache(
                                         firstName = email,
                                         lastname = password,
-                                        User_id = KtorClient.getUserId(email),
-                                        email = "rishav@gmail.com",
-                                        phone = "9192939444"
+                                        User_id = KtorClient.getUserIdSeeker(email),
+                                        savedJobs = "",
+                                        savedInternships="",
+                                        savedFreeLance = "",
+                                        email = "RBC@gmail.com",
+                                        phone = "+919192939444"
                                     )
 
                                 )

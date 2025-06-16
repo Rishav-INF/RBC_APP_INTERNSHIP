@@ -211,7 +211,7 @@ fun JobDetailRow(imageRes: Int, text: String) {
 }
 
 @Composable
-fun LoadAndDisplayImage(imageName: String) {
+fun LoadAndDisplayImage(imageName: String, modifier: Modifier = Modifier ) {
     val context = LocalContext.current
     val bitmap by produceState<Bitmap?>(initialValue = null) {
         val imageData = KtorClient.loadImageJobs(imageName)
@@ -230,6 +230,7 @@ fun LoadAndDisplayImage(imageName: String) {
             contentScale = ContentScale.Crop
         )
     } ?: Text("Loading Image...")
+
 }
 
 @Preview(showBackground = true)

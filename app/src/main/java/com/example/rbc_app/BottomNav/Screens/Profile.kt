@@ -2,6 +2,7 @@ package com.example.rbc_app.BottomNav.Screens
 
 import KtorClient
 import KtorClient.loadImage
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -12,10 +13,12 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
@@ -24,6 +27,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -45,23 +50,50 @@ import com.example.rbc_app.MainActivity
 import com.example.rbc_app.R
 import com.example.rbc_app.RoomDatabase.AppDatabase
 import com.example.rbc_app.RoomDatabase.UserCache
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+// Professional Color Palette
+object ProfileColors {
+    val PrimaryYellow = Color(0xFFF5C842)
+    val LightYellow = Color(0xFFFFF8E1)
+    val DarkYellow = Color(0xFFE6B800)
+    val CreamWhite = Color(0xFFFFFDF7)
+    val WarmWhite = Color(0xFFFAF9F7)
+    val SoftGray = Color(0xFF8A8A8A)
+    val DarkGray = Color(0xFF2C2C2C)
+    val AccentGray = Color(0xFFF5F5F5)
+    val BorderGray = Color(0xFFE0E0E0)
+}
+
 class ProfileActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val shrd = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).getString("Type","def")
+//        if(shrd=="Employer") {
+//            CoroutineScope(Dispatchers.IO).launch{
+//                val appdb = AppDatabase.getInstance(this@ProfileActivity).UserDao().getUid()
+//            }
+//            val userProf = KtorClient.getEmployerForProf()
+//        }
+//        if(shrd=="Seeker") {
+//            CoroutineScope(Dispatchers.IO).launch{
+//                val appdb = AppDatabase.getInstance(this@ProfileActivity).UserDao().getUid()
+//            }
+//            val userProf = KtorClient.getSeekerForProf()
+//        }
 
         setContent {
-            ProfileScreen(navController = rememberNavController())
+            ProfileScreen(navController = rememberNavController(),shrd)
         }
     }
 }
 
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(navController: NavController,shrd :String?) {
     var showDialog by remember{ mutableStateOf(true) }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -70,10 +102,10 @@ fun ProfileScreen(navController: NavController) {
     var userProfile by remember {
         mutableStateOf(
             UserProfile(
-                name = "John Doe",
-                email = "john.doe@example.com",
-                phone = "+1 234 567 8901",
-                joinDate = "January 2023",
+                name = "Rishav Rana",
+                email = "rishav@example.com",
+                phone = "+91 1234567890",
+                joinDate = "January 2024",
                 bio = "Software Developer | Android Enthusiast"
             )
         )
@@ -90,63 +122,113 @@ fun ProfileScreen(navController: NavController) {
         )
     }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        ProfileColors.LightYellow,
+                        ProfileColors.CreamWhite,
+                        ProfileColors.WarmWhite
+                    )
+                )
+            )
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-                // Profile Header
-                Box(
+                // Professional Header Card
+                Card(
                     modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                ) {
-                    LoadAndDisplayImage("sarthak.jpg")
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Name and Edit Button
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 24.dp)
-                ) {
-                    Text(
-                        text = userProfile.name,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .shadow(8.dp, RoundedCornerShape(20.dp)),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = ProfileColors.WarmWhite
                     )
-                    IconButton(
-                        onClick = { showEditDialog = true },
-                        modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(24.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit Profile"
+                        // Profile Image with Professional Border
+                        Box(
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape)
+                                .border(
+                                    4.dp,
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            ProfileColors.PrimaryYellow,
+                                            ProfileColors.DarkYellow
+                                        )
+                                    ),
+                                    CircleShape
+                                )
+                                .background(ProfileColors.AccentGray)
+                        ) {
+                            LoadAndDisplayImage("sarthak.jpg")
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Name and Edit Button
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = userProfile.name,
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = ProfileColors.DarkGray
+                            )
+                            IconButton(
+                                onClick = { showEditDialog = true },
+                                modifier = Modifier
+                                    .padding(start = 8.dp)
+                                    .background(
+                                        ProfileColors.LightYellow,
+                                        CircleShape
+                                    )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Edit Profile",
+                                    tint = ProfileColors.DarkYellow
+                                )
+                            }
+                        }
+
+                        Text(
+                            text = userProfile.bio,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = ProfileColors.SoftGray,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                         )
+
+                        Text(
+                            text = shrd!!,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = ProfileColors.SoftGray,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+
                     }
                 }
-
-                Text(
-                    text = userProfile.bio,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-                )
 
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
             item {
                 // Profile Details Section
-                ProfileSection(title = "Personal Information") {
+                ProfessionalProfileSection(title = "Personal Information") {
                     ProfileDetailItem(icon = R.drawable.email, title = "Email", value = userProfile.email)
                     ProfileDetailItem(icon = R.drawable.call, title = "Phone", value = userProfile.phone)
                     ProfileDetailItem(icon = R.drawable.cale, title = "Member Since", value = userProfile.joinDate)
@@ -155,7 +237,7 @@ fun ProfileScreen(navController: NavController) {
 
             item {
                 // Settings Section
-                ProfileSection(title = "Settings") {
+                ProfessionalProfileSection(title = "Settings") {
                     ProfileActionItem(
                         icon = Icons.Default.Settings,
                         title = "Account Settings",
@@ -176,21 +258,39 @@ fun ProfileScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(24.dp))
 
                 val showDialog=remember{ mutableStateOf(false) }
-                // Logout Button
-                Button(
-                    onClick = {
-                        showDialog.value=true
-                    },
+
+                // Professional Logout Button
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer,
-                        contentColor = MaterialTheme.colorScheme.error
+                        .padding(horizontal = 24.dp)
+                        .shadow(4.dp, RoundedCornerShape(12.dp)),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = ProfileColors.WarmWhite
                     )
                 ) {
-                    Text("Log Out")
+                    Button(
+                        onClick = {
+                            showDialog.value=true
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFFFEBEE),
+                            contentColor = Color(0xFFD32F2F)
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            "Log Out",
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                    }
                 }
+
                 LogOutDialog(
                     showDialog=showDialog,
                     onConfirm = {
@@ -214,9 +314,7 @@ fun ProfileScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
-
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -229,38 +327,67 @@ fun LogOutDialog(
         AlertDialog(
             onDismissRequest = { showDialog.value = false },
             confirmButton = {
-                Button(onClick = {
-                    onConfirm() // Perform log-out action
-                    showDialog.value = false
-                }) {
+                Button(
+                    onClick = {
+                        onConfirm()
+                        showDialog.value = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFD32F2F),
+                        contentColor = Color.White
+                    )
+                ) {
                     Text("Log Out")
                 }
             },
             dismissButton = {
-                Button(onClick = { showDialog.value = false }) {
+                Button(
+                    onClick = { showDialog.value = false },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = ProfileColors.LightYellow,
+                        contentColor = ProfileColors.DarkGray
+                    )
+                ) {
                     Text("Cancel")
                 }
             },
-            title = { Text("ARE YOU SURE?") },
-            text = { Text("YOU WANT TO LOG OUT") }
+            title = {
+                Text(
+                    "ARE YOU SURE?",
+                    color = ProfileColors.DarkGray,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    "YOU WANT TO LOG OUT",
+                    color = ProfileColors.SoftGray
+                )
+            },
+            containerColor = ProfileColors.WarmWhite
         )
     }
 }
 
 @Composable
-fun ProfileSection(title: String, content: @Composable () -> Unit) {
+fun ProfessionalProfileSection(title: String, content: @Composable () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.Bold,
+            color = ProfileColors.DarkGray,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
         )
-        Surface(
-            shape = MaterialTheme.shapes.medium,
+        Card(
+            shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
+                .shadow(6.dp, RoundedCornerShape(16.dp)),
+            colors = CardDefaults.cardColors(
+                containerColor = ProfileColors.WarmWhite
+            )
         ) {
             Column {
                 content()
@@ -275,25 +402,38 @@ fun ProfileDetailItem(icon: Int, title: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            painter = painterResource(id = icon),
-            contentDescription = title,
-            modifier = Modifier.size(24.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(
+                    ProfileColors.LightYellow,
+                    RoundedCornerShape(10.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(id = icon),
+                contentDescription = title,
+                modifier = Modifier.size(20.dp),
+                tint = ProfileColors.DarkYellow
+            )
+        }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                color = ProfileColors.SoftGray,
+                fontWeight = FontWeight.Medium
             )
             Text(
                 text = value,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                color = ProfileColors.DarkGray,
+                fontWeight = FontWeight.SemiBold
             )
         }
     }
@@ -305,48 +445,56 @@ fun ProfileActionItem(icon: Any, title: String, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(16.dp),
+            .padding(20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        when (icon) {
-            is Int -> Icon(
-                painter = painterResource(id = icon),
-                contentDescription = title,
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-            else -> Icon(
-                imageVector = icon as ImageVector,
-                contentDescription = title,
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(
+                    ProfileColors.LightYellow,
+                    RoundedCornerShape(10.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            when (icon) {
+                is Int -> Icon(
+                    painter = painterResource(id = icon),
+                    contentDescription = title,
+                    modifier = Modifier.size(20.dp),
+                    tint = ProfileColors.DarkYellow
+                )
+                else -> Icon(
+                    imageVector = icon as ImageVector,
+                    contentDescription = title,
+                    modifier = Modifier.size(20.dp),
+                    tint = ProfileColors.DarkYellow
+                )
+            }
         }
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = title,
             style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            color = ProfileColors.DarkGray,
+            fontWeight = FontWeight.Medium
         )
         Icon(
             painter = painterResource(id = R.drawable.profile),
             contentDescription = "Navigate",
-            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            tint = ProfileColors.SoftGray,
+            modifier = Modifier.size(20.dp)
         )
     }
 }
-
-
-
-
-
 
 @Composable
 fun LoadAndDisplayImage(imageName: String) {
     val context = LocalContext.current
     val bitmap by produceState<Bitmap?>(initialValue = null) {
         val imageData = loadImage(imageName)
-        Log.d("LoadImageDebug", "Image Data: ${imageData?.size ?: "null"} bytes") // Log size
+        Log.d("LoadImageDebug", "Image Data: ${imageData?.size ?: "null"} bytes")
         value = imageData?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
     }
 
@@ -355,16 +503,25 @@ fun LoadAndDisplayImage(imageName: String) {
             bitmap = it.asImageBitmap(),
             contentDescription = "Profile picture",
             modifier = Modifier
-                .size(100.dp)
+                .size(112.dp)
                 .clip(CircleShape)
                 .clickable { /* Handle profile picture change */ },
             contentScale = ContentScale.Crop
         )
-    } ?: Text("Loading Image...")
+    } ?: Box(
+        modifier = Modifier
+            .size(112.dp)
+            .clip(CircleShape)
+            .background(ProfileColors.AccentGray),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            "Rishav...",
+            color = ProfileColors.SoftGray,
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
 }
-
-
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -373,48 +530,82 @@ fun EditProfileDialog(profile: UserProfile, onDismiss: () -> Unit, onSave: (User
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Edit Profile") },
+        title = {
+            Text(
+                "Edit Profile",
+                fontWeight = FontWeight.Bold,
+                color = ProfileColors.DarkGray
+            )
+        },
         text = {
             Column {
                 OutlinedTextField(
                     value = editedProfile.name,
                     onValueChange = { editedProfile = editedProfile.copy(name = it) },
                     label = { Text("Name") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = ProfileColors.PrimaryYellow,
+                        focusedLabelColor = ProfileColors.DarkYellow
+                    )
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = editedProfile.email,
                     onValueChange = { editedProfile = editedProfile.copy(email = it) },
                     label = { Text("Email") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = ProfileColors.PrimaryYellow,
+                        focusedLabelColor = ProfileColors.DarkYellow
+                    )
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = editedProfile.phone,
                     onValueChange = { editedProfile = editedProfile.copy(phone = it) },
                     label = { Text("Phone") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = ProfileColors.PrimaryYellow,
+                        focusedLabelColor = ProfileColors.DarkYellow
+                    )
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = editedProfile.bio,
                     onValueChange = { editedProfile = editedProfile.copy(bio = it) },
                     label = { Text("Bio") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = ProfileColors.PrimaryYellow,
+                        focusedLabelColor = ProfileColors.DarkYellow
+                    )
                 )
             }
         },
         confirmButton = {
-            Button(onClick = { onSave(editedProfile) }) {
-                Text("Save")
+            Button(
+                onClick = { onSave(editedProfile) },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = ProfileColors.PrimaryYellow,
+                    contentColor = ProfileColors.DarkGray
+                )
+            ) {
+                Text("Save", fontWeight = FontWeight.SemiBold)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = ProfileColors.SoftGray
+                )
+            ) {
                 Text("Cancel")
             }
-        }
+        },
+        containerColor = ProfileColors.WarmWhite
     )
 }
 
@@ -429,5 +620,5 @@ data class UserProfile(
 @Preview(showBackground = true)
 @Composable
 fun PreviewProfileScreen() {
-    ProfileScreen(navController = rememberNavController())
+    ProfileScreen(navController = rememberNavController(),"def")
 }

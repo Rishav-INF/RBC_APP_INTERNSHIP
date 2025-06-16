@@ -39,7 +39,16 @@
         <activity android:name=".InternJobFreelanceAdd.AddInternship"/>
         <activity android:name=".InternJobFreelanceAdd.AddJobActivity"/>
         <activity android:name=".JobFormActivities.jobFormActivity"/>
+        <activity android:name=".DetailedFreelance"/>
+        <activity android:name=".FreeLanceFormActivities.FreeLanceFormActivity"/>
         <activity android:name=".DetailedJob"/>
+        <activity android:name=".JobList.SavedJobsActivity"/>
+        <activity android:name=".InternshipFormActivities.InternshipFormActivity"/>
+        <activity android:name=".detailedInternshipActivity"/>
+        <activity android:name=".MentorshipsActivity"/>
+        <activity android:name=".MoreOppActivity"/>
+        <activity android:name=".RbcContactInfoActivity"/>
+        <activity android:name=".ProMembershipActivity"/>
     </application>
 
 </manifest>

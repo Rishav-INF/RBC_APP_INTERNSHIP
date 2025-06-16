@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="Theme.RBC_APP" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Primary brand color (used for app bar, buttons, etc.) -->
+        <item name="android:colorPrimary">#FFD54F</item>  <!-- Amber 300 -->
+        <item name="android:colorPrimaryDark">#FFC107</item>  <!-- Amber 500 (darker for status bar) -->
+        <item name="android:colorAccent">#FFA000</item>  <!-- Amber 700 (for controls) -->
 
-    <style name="Theme.RBC_APP" parent="android:Theme.Material.Light.NoActionBar" />
+        <!-- Background colors -->
+        <item name="android:windowBackground">#FFF8E1</item>  <!-- Amber 50 (very light yellowish white) -->
+        <item name="android:colorBackground">#FFF8E1</item>  <!-- Amber 50 -->
+
+        <!-- Text colors -->
+        <item name="android:textColorPrimary">#212121</item>  <!-- Dark text on light backgrounds -->
+        <item name="android:textColorSecondary">#757575</item>  <!-- Secondary text -->
+        <item name="android:textColorPrimaryInverse">#FFFFFF</item>  <!-- Light text on dark backgrounds -->
+
+        <!-- Button styles -->
+
+    </style>
+
+    <!-- Custom Button Style -->
+    <!-- Optional: Custom toolbar style -->
+    <style name="ToolbarStyle.RBC_APP" parent="android:Widget.Material.Toolbar">
+        <item name="android:background">#FFD54F</item>  <!-- Amber 300 -->
+        <item name="android:titleTextColor">#212121</item>  <!-- Dark text -->
+    </style>
 </resources>

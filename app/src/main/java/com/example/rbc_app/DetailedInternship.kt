@@ -2,7 +2,6 @@ package com.example.rbc_app
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -27,13 +26,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.example.rbc_app.JobFormActivities.jobFormActivity
+import com.example.rbc_app.InternshipFormActivities.InternshipFormActivity
 import com.example.rbc_app.RoomDatabase.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,35 +39,35 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-class DetailedJob : ComponentActivity() {
+class detailedInternshipActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            JobTheme {
+            InternshipTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = Color(0xFFF5F5F5)
                 ) {
-                    val jobId = intent.getIntExtra("job_id", -1)
-                    val jobName = intent.getStringExtra("jobName") ?: ""
-                    val jobDesc = intent.getStringExtra("jobDesc") ?: ""
+                    val internshipId = intent.getIntExtra("internship_id", -1)
+                    val name = intent.getStringExtra("Name") ?: ""
+                    val internshipDesc = intent.getStringExtra("internshipDesc") ?: ""
                     val companyName = intent.getStringExtra("companyName") ?: ""
                     val companyLogoName = intent.getStringExtra("companyLogoName") ?: ""
-                    val jobType = intent.getStringExtra("jobType") ?: ""
-                    val jobLocation = intent.getStringExtra("jobLocation") ?: ""
+                    val internshipType = intent.getStringExtra("internshipType") ?: ""
+                    val internshipLocation = intent.getStringExtra("internshipLocation") ?: ""
                     val preferredCandType = intent.getStringExtra("preferredCandType") ?: ""
-                    val jobStatus = intent.getStringExtra("jobStatus") ?: ""
+                    val internshipStatus = intent.getStringExtra("internshipStatus") ?: ""
 
-                    JobPostingApp(
-                        jobId = jobId,
-                        jobName = jobName,
-                        jobDesc = jobDesc,
+                    InternshipPostingApp(
+                        internshipId = internshipId,
+                        name = name,
+                        internshipDesc = internshipDesc,
                         companyName = companyName,
                         companyLogoName = companyLogoName,
-                        jobType = jobType,
-                        jobLocation = jobLocation,
+                        internshipType = internshipType,
+                        internshipLocation = internshipLocation,
                         preferredCandType = preferredCandType,
-                        jobStatus = jobStatus
+                        internshipStatus = internshipStatus
                     )
                 }
             }
@@ -78,7 +76,7 @@ class DetailedJob : ComponentActivity() {
 }
 
 @Composable
-fun JobTheme(content: @Composable () -> Unit) {
+fun InternshipTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = lightColorScheme(
             primary = Color(0xFF1976D2),
@@ -92,53 +90,53 @@ fun JobTheme(content: @Composable () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun JobPostingApp(
-    jobId: Int,
-    jobName: String,
-    jobDesc: String,
+fun InternshipPostingApp(
+    internshipId: Int,
+    name: String,
+    internshipDesc: String,
     companyName: String,
     companyLogoName: String,
-    jobType: String,
-    jobLocation: String,
+    internshipType: String,
+    internshipLocation: String,
     preferredCandType: String,
-    jobStatus: String
+    internshipStatus: String
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        JobDetailHeader(
-            jobName = jobName,
+        InternshipDetailHeader(
+            name = name,
             companyName = companyName,
             preferredCandType = preferredCandType,
             companyLogoName = companyLogoName,
-            jobLocation = jobLocation,
-            jobStatus = jobStatus,
-            jobId = jobId
+            internshipLocation = internshipLocation,
+            internshipStatus = internshipStatus,
+            internshipId = internshipId
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        JobDescriptionSection(
-            jobDesc = jobDesc,
-            jobType = jobType,
+        InternshipDescriptionSection(
+            internshipDesc = internshipDesc,
+            internshipType = internshipType,
             preferredCandType = preferredCandType,
-            jobId = jobId
+            internshipId = internshipId
         )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun JobDetailHeader(
-    jobName: String,
+fun InternshipDetailHeader(
+    name: String,
     companyName: String,
     preferredCandType: String,
     companyLogoName: String,
-    jobLocation: String,
-    jobStatus: String,
-    jobId: Int
+    internshipLocation: String,
+    internshipStatus: String,
+    internshipId: Int
 ) {
     val context = LocalContext.current
     val currentDate = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date())
@@ -146,9 +144,9 @@ fun JobDetailHeader(
 
     LaunchedEffect(Unit) {
         CoroutineScope(Dispatchers.IO).launch {
-            val savedJobs = AppDatabase.getInstance(context).UserDao().getSavedJobs()
-            val savedList = savedJobs.split(",").filter { it.isNotEmpty() }
-            isSaved = savedList.contains(jobId.toString())
+            val savedInternships = AppDatabase.getInstance(context).UserDao().getSavedInternships()
+            val savedList = savedInternships.split(",").filter { it.isNotEmpty() }
+            isSaved = savedList.contains(internshipId.toString())
         }
     }
 
@@ -185,7 +183,7 @@ fun JobDetailHeader(
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text = jobName,
+                    text = name,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF333333)
@@ -215,7 +213,7 @@ fun JobDetailHeader(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = jobLocation,
+                            text = internshipLocation,
                             fontSize = 14.sp,
                             color = Color(0xFF777777)
                         )
@@ -239,14 +237,14 @@ fun JobDetailHeader(
                 modifier = Modifier
                     .clip(RoundedCornerShape(16.dp))
                     .background(
-                        if (jobStatus == "Open") Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
+                        if (internshipStatus == "Open") Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
                     )
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 Text(
-                    text = jobStatus,
+                    text = internshipStatus,
                     fontSize = 14.sp,
-                    color = if (jobStatus == "Open") Color(0xFF2E7D32) else Color(0xFFC62828),
+                    color = if (internshipStatus == "Open") Color(0xFF2E7D32) else Color(0xFFC62828),
                     fontWeight = FontWeight.Medium
                 )
             }
@@ -269,22 +267,22 @@ fun JobDetailHeader(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.clickable {
                         CoroutineScope(Dispatchers.IO).launch {
-                            val savedJobs = AppDatabase.getInstance(context).UserDao().getSavedJobs()
+                            val savedInternships = AppDatabase.getInstance(context).UserDao().getSavedInternships()
                             if (!isSaved) {
-                                val updated = if (savedJobs.isEmpty()) {
-                                    jobId.toString()
+                                val updated = if (savedInternships.isEmpty()) {
+                                    internshipId.toString()
                                 } else {
-                                    "$savedJobs,$jobId"
+                                    "$savedInternships,$internshipId"
                                 }
                                 AppDatabase.getInstance(context).UserDao()
-                                    .updateSavedJobs(updated)
+                                    .UpdateSavedInternships(updated)
                                 isSaved = true
                             } else {
-                                val updated = savedJobs.split(",")
-                                    .filter { it != jobId.toString() }
+                                val updated = savedInternships.split(",")
+                                    .filter { it != internshipId.toString() }
                                     .joinToString(",")
                                 AppDatabase.getInstance(context).UserDao()
-                                    .updateSavedJobs(updated)
+                                    .UpdateSavedInternships(updated)
                                 isSaved = false
                             }
                         }
@@ -326,11 +324,11 @@ fun JobDetailHeader(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun JobDescriptionSection(
-    jobDesc: String,
-    jobType: String,
+fun InternshipDescriptionSection(
+    internshipDesc: String,
+    internshipType: String,
     preferredCandType: String,
-    jobId: Int
+    internshipId: Int
 ) {
     val context = LocalContext.current
 
@@ -348,14 +346,14 @@ fun JobDescriptionSection(
         ) {
             // Section title
             Text(
-                text = "Job Description",
+                text = "Internship Description",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF333333),
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            // About the Role
+            // About the Internship
             Text(
                 text = "About the Role:",
                 fontSize = 16.sp,
@@ -364,7 +362,7 @@ fun JobDescriptionSection(
                 modifier = Modifier.padding(bottom = 4.dp)
             )
             Text(
-                text = jobDesc,
+                text = internshipDesc,
                 fontSize = 14.sp,
                 color = Color(0xFF666666),
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -386,9 +384,9 @@ fun JobDescriptionSection(
                     .background(Color(0xFFFFFDE7))
                     .padding(12.dp)
             ) {
-                RequirementItem("Job Type", jobType)
+                RequirementItem("Internship Type", internshipType)
                 RequirementItem("Preferred Candidate", preferredCandType)
-                RequirementItem("Job ID", jobId.toString())
+                RequirementItem("Internship ID", internshipId.toString())
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -396,8 +394,8 @@ fun JobDescriptionSection(
             // Quick Apply button
             Button(
                 onClick = {
-                    val intent = Intent(context, jobFormActivity::class.java)
-                    intent.putExtra("job_id", jobId)
+                    val intent = Intent(context, InternshipFormActivity::class.java)
+                    intent.putExtra("internship_id", internshipId)
                     context.startActivity(intent)
                 },
                 modifier = Modifier
@@ -419,21 +417,3 @@ fun JobDescriptionSection(
     }
 }
 
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewJobPostingApp() {
-    JobTheme {
-        JobPostingApp(
-            jobId = 111,
-            jobName = "MEP BIM Modeler",
-            jobDesc = "Matrix BIM and Design Solutions LLP is hiring an experienced MEP BIM Modeler...",
-            companyName = "Matrix Designs",
-            companyLogoName = "matrix_logo.png",
-            jobType = "Full-time",
-            jobLocation = "Pune",
-            preferredCandType = "Experienced Professionals",
-            jobStatus = "Active"
-        )
-    }
-}

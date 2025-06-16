@@ -32,6 +32,26 @@ interface UserDao {
     @Insert
     suspend fun insertUser(user: UserCache)
 
+    @Query("SELECT SavedJobs FROM user WHERE uid = 1")
+    suspend fun getSavedJobs(): String
+
+    @Query("SELECT SavedFreelance FROM user WHERE uid = 1")
+    suspend fun getSavedFreelance(): String
+
+    @Query("SELECT SavedInternships FROM user WHERE uid = 1")
+    suspend fun getSavedInternships(): String
+
+    // Update the string in the same row
+    @Query("UPDATE user SET SavedJobs = :newJobs WHERE uid = 1")
+    suspend fun updateSavedJobs(newJobs: String)
+
+    @Query("UPDATE user SET savedInternships = :newInternship WHERE uid = 1")
+    suspend fun UpdateSavedInternships(newInternship: String)
+
+
+    @Query("UPDATE user SET SavedFreelance = :newFreelance WHERE uid = 1")
+    suspend fun updateSavedFreelance(newFreelance: String)
+
     @Query("SELECT COUNT(*) FROM user")
     suspend fun chk():Int
 

@@ -9,3 +9,11 @@ class JobFieldDefinition (
         var type:String,
         var isRequired:Boolean
     )
+
+@Serializable
+class InternshipFieldDefinition (
+    var label:String,
+    var label_text:String,
+    var type:String,
+    var isRequired:Boolean
+)

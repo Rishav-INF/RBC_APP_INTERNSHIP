@@ -1,28 +1,17 @@
 package com.example.rbc_app.InternshipList
 
 import KtorClient
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -38,9 +27,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.rbc_app.R
+import com.example.rbc_app.detailedInternshipActivity
 
 @Composable
-fun InternshipPostingCard(internInfo : KtorClient.internshipforCard) {
+fun InternshipPostingCard(internInfo: KtorClient.internshipforCard) {
+    val context = LocalContext.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -51,7 +43,6 @@ fun InternshipPostingCard(internInfo : KtorClient.internshipforCard) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            // Urgently hiring badge
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
@@ -59,7 +50,7 @@ fun InternshipPostingCard(internInfo : KtorClient.internshipforCard) {
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = "Urgently hiring",
+                    text = "Internship Opportunity",
                     color = MaterialTheme.colorScheme.onErrorContainer,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp
@@ -68,14 +59,12 @@ fun InternshipPostingCard(internInfo : KtorClient.internshipforCard) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Job title
             Text(
                 text = internInfo.Name,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
 
-            // Company name with image
             Row(verticalAlignment = Alignment.CenterVertically) {
                 LoadAndDisplayImage(internInfo.companyLogoName)
                 Spacer(modifier = Modifier.width(8.dp))
@@ -88,41 +77,30 @@ fun InternshipPostingCard(internInfo : KtorClient.internshipforCard) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Location row with image
             JobDetailRow(
-                imageRes = R.drawable.location, // Replace with your image resource
-                text = internInfo.internshipLocation
-            )
-
-            // Salary row with image
-            JobDetailRow(
-                imageRes = R.drawable.rupees_logo, // Replace with your image resource
-                text = "₹8,000 - ₹15,000"
+                imageRes = R.drawable.location,
+                text = "Location: ${internInfo.internshipLocation}"
             )
 
             Divider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // Work type row with image
             JobDetailRow(
-                imageRes = R.drawable.internships, // Replace with your image resource
-                text = internInfo.internshipType
-            )
-
-
-            // Experience level row with image
-            JobDetailRow(
-                imageRes = R.drawable.internships, // Replace with your image resource
-                text = internInfo.preferredCandType
+                imageRes = R.drawable.cale,
+                text = "Type: ${internInfo.internshipType}"
             )
 
             JobDetailRow(
-                imageRes = R.drawable.internships, // Replace with your image resource
-                text = internInfo.internshipStatus
+                imageRes = R.drawable.internships,
+                text = "Preferred: ${internInfo.preferredCandType}"
+            )
+
+            JobDetailRow(
+                imageRes = R.drawable.location,
+                text = "Status: ${internInfo.internshipStatus}"
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Walk-in interview section with image
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -134,16 +112,30 @@ fun InternshipPostingCard(internInfo : KtorClient.internshipforCard) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = painterResource(R.drawable.home), // Replace with your image resource
-                        contentDescription = "Walk-in",
+                        painter = painterResource(R.drawable.home),
+                        contentDescription = "Internship",
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Apply Now",
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Button(
+                        onClick = {
+                            val intent = Intent(context, detailedInternshipActivity::class.java).apply {
+                                putExtra("internship_id", internInfo.internship_id)
+                                putExtra("Name", internInfo.Name)
+                                putExtra("internshipDesc", internInfo.internshipDesc)
+                                putExtra("companyName", internInfo.companyName)
+                                putExtra("companyLogoName", internInfo.companyLogoName)
+                                putExtra("internshipType", internInfo.internshipType)
+                                putExtra("internshipLocation", internInfo.internshipLocation)
+                                putExtra("preferredCandType", internInfo.preferredCandType)
+                                putExtra("internshipStatus", internInfo.internshipStatus)
+                            }
+                            context.startActivity(intent)
+                        }
+                    ) {
+                        Text("APPLY NOW")
+                    }
+
                 }
             }
         }
@@ -171,21 +163,20 @@ fun JobDetailRow(imageRes: Int, text: String) {
 
 @Composable
 fun LoadAndDisplayImage(imageName: String) {
-    val context = LocalContext.current
     val bitmap by produceState<Bitmap?>(initialValue = null) {
         val imageData = KtorClient.loadImageInternships(imageName)
-        Log.d("LoadImageDebug", "Image Data: ${imageData?.size ?: "null"} bytes") // Log size
+        Log.d("LoadImageDebug", "Image Data: ${imageData?.size ?: "null"} bytes")
         value = imageData?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
     }
 
     bitmap?.let {
         Image(
             bitmap = it.asImageBitmap(),
-            contentDescription = "Profile picture",
+            contentDescription = "Company logo",
             modifier = Modifier
                 .size(100.dp)
                 .clip(CircleShape)
-                .clickable { /* Handle profile picture change */ },
+                .clickable { },
             contentScale = ContentScale.Crop
         )
     } ?: Text("Loading Image...")
@@ -193,16 +184,17 @@ fun LoadAndDisplayImage(imageName: String) {
 
 @Preview(showBackground = true)
 @Composable
-fun JobPostingCardPreview() {
+fun InternshipPostingCardPreview() {
     MaterialTheme {
         val internship = KtorClient.internshipforCard(
-            Name = "Android Developer",
-            internshipDesc = "Looking for a skilled Android developer with experience in Kotlin and Jetpack Compose.",
-            companyName = "CodeKriti Tech",
-            companyLogoName = "codekriti_logo.png",
-            internshipType = "Full-time",
-            internshipLocation = "Bangalore",
-            preferredCandType = "Experienced",
+            internship_id = 101,
+            Name = "Android Developer Intern",
+            internshipDesc = "Work on building cool Android apps.",
+            companyName = "TechNova",
+            companyLogoName = "technova_logo.png",
+            internshipType = "Remote",
+            internshipLocation = "Remote",
+            preferredCandType = "CS Students",
             internshipStatus = "Open"
         )
         InternshipPostingCard(internship)

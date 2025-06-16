@@ -11,6 +11,9 @@ data class UserCache (
     @ColumnInfo(name="last_name") val lastname:String?,
     @ColumnInfo(name = "User_id") val User_id:Int?,
 //    @ColumnInfo(name="Image") val imagebyte : ByteArray?,
+    @ColumnInfo(name="SavedJobs") val savedJobs:String?,
+    @ColumnInfo(name="SavedInternships") val savedInternships:String?,
+    @ColumnInfo(name="SavedFreelance") val savedFreeLance:String?,
     @ColumnInfo(name="Email") val email : String?,
     @ColumnInfo(name="phone") val phone : String?
 )

@@ -1,4 +1,4 @@
-package com.example.rbc_app.JobFormActivities
+package com.example.rbc_app.InternshipFormActivities
 
 import KtorClient
 import android.content.Intent
@@ -14,7 +14,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,7 +30,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.rbc_app.BottomNav.Screens.JobsActivity
+import com.example.rbc_app.BottomNav.Screens.Internships
+import com.example.rbc_app.JobFormActivities.InternshipFieldDefinition
+import com.example.rbc_app.JobFormActivities.UserAddFormDetailsInternships
 import com.example.rbc_app.RoomDatabase.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,8 +41,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-// Professional Color Palette with yellowish tones
-object JobFormColors {
+// Professional Color Palette (same as FreeLanceForm)
+object InternshipFormColors {
     val PrimaryYellow = Color(0xFFF5C842)
     val LightYellow = Color(0xFFFFF8E1)
     val DarkYellow = Color(0xFFE6B800)
@@ -50,31 +55,31 @@ object JobFormColors {
     val SuccessGreen = Color(0xFF4CAF50)
 }
 
-class jobFormActivity : ComponentActivity() {
+class InternshipFormActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val job_id = intent.getIntExtra("job_id", -1)
-        Log.d("JobFormActivity", "Job ID: $job_id")
+        val internship_id = intent.getIntExtra("internship_id", -1)
+        Log.d("InternshipFormActivity", "Internship ID: $internship_id")
         setContent {
-            JobForm(job_id, this)
+            InternshipForm(internship_id, this)
         }
     }
 }
 
 @Composable
-fun JobForm(jobId: Int, activity: ComponentActivity) {
+fun InternshipForm(internshipId: Int, activity: ComponentActivity) {
     val context = LocalContext.current
-    var fields by remember { mutableStateOf<List<JobFieldDefinition>>(emptyList()) }
-    var emp_id by remember { mutableStateOf("") }
+    var fields by remember { mutableStateOf<List<InternshipFieldDefinition>>(emptyList()) }
+    var supervisor_id by remember { mutableStateOf("") }
     val inputValues = remember { mutableStateMapOf<String, String>() }
     var uid by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
 
-    LaunchedEffect(jobId) {
+    LaunchedEffect(internshipId) {
         uid = AppDatabase.getInstance(context).UserDao().getUid().toString()
-        emp_id = KtorClient.getEmpIdFromJobId(jobId).toString()
-        fields = KtorClient.getJobFormTemplate(jobId)
-        Log.d("JobForm", "Fields fetched: ${fields.size} fields")
+        supervisor_id = KtorClient.getEmpIdFromInternshipId(internshipId).toString()
+        fields = KtorClient.getInternshipFormTemplate(internshipId)
+        Log.d("InternshipForm", "Fields fetched: ${fields.size} fields")
     }
 
     Box(
@@ -83,9 +88,9 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        JobFormColors.LightYellow,
-                        JobFormColors.CreamWhite,
-                        JobFormColors.WarmWhite
+                        InternshipFormColors.LightYellow,
+                        InternshipFormColors.CreamWhite,
+                        InternshipFormColors.WarmWhite
                     )
                 )
             )
@@ -105,7 +110,7 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
                     .shadow(8.dp, RoundedCornerShape(16.dp)),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = JobFormColors.WarmWhite
+                    containerColor = InternshipFormColors.WarmWhite
                 )
             ) {
                 Column(
@@ -118,8 +123,8 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
                             .background(
                                 Brush.linearGradient(
                                     colors = listOf(
-                                        JobFormColors.PrimaryYellow,
-                                        JobFormColors.DarkYellow
+                                        InternshipFormColors.PrimaryYellow,
+                                        InternshipFormColors.DarkYellow
                                     )
                                 ),
                                 RoundedCornerShape(14.dp)
@@ -127,8 +132,8 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Menu,
-                            contentDescription = "Job Icon",
+                            imageVector = Icons.Default.Send,
+                            contentDescription = "Form Icon",
                             tint = Color.White,
                             modifier = Modifier.size(28.dp)
                         )
@@ -137,16 +142,16 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        "JOB APPLICATION FORM",
+                        "INTERNSHIP APPLICATION FORM",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = JobFormColors.DarkGray
+                        color = InternshipFormColors.DarkGray
                     )
 
                     Text(
                         "Fill out the details below to submit your application",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = JobFormColors.SoftGray,
+                        color = InternshipFormColors.SoftGray,
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
@@ -156,7 +161,7 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
 
             // Form Fields
             fields.forEach { field ->
-                ProfessionalJobInputField(field, inputValues)
+                ProfessionalInternshipInputField(field, inputValues)
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
@@ -167,30 +172,31 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
                     .shadow(6.dp, RoundedCornerShape(12.dp)),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = JobFormColors.WarmWhite
+                    containerColor = InternshipFormColors.WarmWhite
                 )
             ) {
                 Button(
                     onClick = {
-                        Log.d("JobForm", "Submit button clicked!")
+                        Log.d("InternshipForm", "Submit button clicked!")
                         CoroutineScope(Dispatchers.IO).launch {
                             val formJson = Json.encodeToString(inputValues.toMap())
-                            val details = UserAddFormDetails(
-                                emp_id = emp_id.toInt(),
-                                job_id = jobId,
+                            val details = UserAddFormDetailsInternships(
+                                emp_id = supervisor_id.toInt(),
+                                internship_id = internshipId,
                                 user_id = uid.toInt(),
                                 field_details = formJson
                             )
 
-                            Log.d("JobForm", "Submitting details: $details")
-                            val res: String = KtorClient.detailAddJobForm(details)
+                            Log.d("InternshipForm", "Submitting details: $details")
+
+                            val res: String = KtorClient.detailAddInternshipForm(details)
 
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(context, res, Toast.LENGTH_SHORT).show()
 
-                                if (res.contains("form submitted successfully")) {
-                                    context.startActivity(Intent(context, JobsActivity::class.java))
-                                    activity.finish()
+                                if (res.contains("internship application submitted successfully")) {
+                                    context.startActivity(Intent(context, Internships::class.java))
+                                    activity.finish() // Finish current activity to prevent back navigation
                                 }
                             }
                         }
@@ -199,8 +205,8 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
                         .fillMaxWidth()
                         .padding(16.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = JobFormColors.PrimaryYellow,
-                        contentColor = JobFormColors.DarkGray
+                        containerColor = InternshipFormColors.PrimaryYellow,
+                        contentColor = InternshipFormColors.DarkGray
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -228,8 +234,8 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
 }
 
 @Composable
-fun ProfessionalJobInputField(
-    field: JobFieldDefinition,
+fun ProfessionalInternshipInputField(
+    field: InternshipFieldDefinition,
     inputValues: MutableMap<String, String>
 ) {
     var input by remember { mutableStateOf("") }
@@ -240,7 +246,7 @@ fun ProfessionalJobInputField(
             .shadow(4.dp, RoundedCornerShape(12.dp)),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = JobFormColors.WarmWhite
+            containerColor = InternshipFormColors.WarmWhite
         )
     ) {
         Column(
@@ -255,7 +261,7 @@ fun ProfessionalJobInputField(
                     modifier = Modifier
                         .size(32.dp)
                         .background(
-                            JobFormColors.LightYellow,
+                            InternshipFormColors.LightYellow,
                             RoundedCornerShape(8.dp)
                         ),
                     contentAlignment = Alignment.Center
@@ -263,7 +269,7 @@ fun ProfessionalJobInputField(
                     Icon(
                         imageVector = getFieldIcon(field.type),
                         contentDescription = field.label,
-                        tint = JobFormColors.DarkYellow,
+                        tint = InternshipFormColors.DarkYellow,
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -275,13 +281,13 @@ fun ProfessionalJobInputField(
                         text = field.label,
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
-                        color = JobFormColors.DarkGray
+                        color = InternshipFormColors.DarkGray
                     )
                     if (field.label_text.isNotEmpty()) {
                         Text(
                             text = field.label_text,
                             style = MaterialTheme.typography.bodySmall,
-                            color = JobFormColors.SoftGray
+                            color = InternshipFormColors.SoftGray
                         )
                     }
                 }
@@ -306,13 +312,36 @@ fun ProfessionalJobInputField(
                         placeholder = {
                             Text(
                                 "Enter ${field.label.lowercase()}",
-                                color = JobFormColors.SoftGray
+                                color = InternshipFormColors.SoftGray
                             )
                         },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = JobFormColors.PrimaryYellow,
-                            focusedLabelColor = JobFormColors.DarkYellow,
-                            cursorColor = JobFormColors.DarkYellow
+                            focusedBorderColor = InternshipFormColors.PrimaryYellow,
+                            focusedLabelColor = InternshipFormColors.DarkYellow,
+                            cursorColor = InternshipFormColors.DarkYellow
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                }
+
+                "portfolio" -> {
+                    OutlinedTextField(
+                        value = input,
+                        onValueChange = {
+                            input = it
+                            inputValues[field.label] = it
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = {
+                            Text(
+                                "Paste your portfolio link",
+                                color = InternshipFormColors.SoftGray
+                            )
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = InternshipFormColors.PrimaryYellow,
+                            focusedLabelColor = InternshipFormColors.DarkYellow,
+                            cursorColor = InternshipFormColors.DarkYellow
                         ),
                         shape = RoundedCornerShape(8.dp)
                     )
@@ -322,7 +351,7 @@ fun ProfessionalJobInputField(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = JobFormColors.AccentGray
+                            containerColor = InternshipFormColors.AccentGray
                         ),
                         shape = RoundedCornerShape(8.dp)
                     ) {
@@ -338,14 +367,14 @@ fun ProfessionalJobInputField(
                                 Icon(
                                     imageVector = Icons.Default.Info,
                                     contentDescription = "Info",
-                                    tint = JobFormColors.SoftGray,
+                                    tint = InternshipFormColors.SoftGray,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     "(File upload will be implemented later)",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = JobFormColors.SoftGray,
+                                    color = InternshipFormColors.SoftGray,
                                     fontWeight = FontWeight.Medium
                                 )
                             }
@@ -386,8 +415,8 @@ fun getFieldIcon(fieldType: String): ImageVector {
     return when (fieldType.lowercase()) {
         "email" -> Icons.Default.Email
         "text" -> Icons.Default.Person
-        "number" -> Icons.Default.Menu
-        "file" -> Icons.Default.Add
+        "number" -> Icons.Default.Info
+        "portfolio" -> Icons.Default.Send
         else -> Icons.Default.Info
     }
 }

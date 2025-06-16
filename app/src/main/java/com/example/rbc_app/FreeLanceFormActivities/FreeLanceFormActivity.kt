@@ -1,4 +1,4 @@
-package com.example.rbc_app.JobFormActivities
+package com.example.rbc_app.FreeLanceFormActivities
 
 import KtorClient
 import android.content.Intent
@@ -14,7 +14,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,7 +30,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.rbc_app.BottomNav.Screens.JobsActivity
+import com.example.rbc_app.BottomNav.Screens.FreeLance
+import com.example.rbc_app.JobFormActivities.JobFieldDefinition
 import com.example.rbc_app.RoomDatabase.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,8 +40,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-// Professional Color Palette with yellowish tones
-object JobFormColors {
+// Professional Color Palette (same as ProfileScreen)
+object FreeLanceFormColors {
     val PrimaryYellow = Color(0xFFF5C842)
     val LightYellow = Color(0xFFFFF8E1)
     val DarkYellow = Color(0xFFE6B800)
@@ -50,31 +54,33 @@ object JobFormColors {
     val SuccessGreen = Color(0xFF4CAF50)
 }
 
-class jobFormActivity : ComponentActivity() {
+class FreeLanceFormActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val job_id = intent.getIntExtra("job_id", -1)
-        Log.d("JobFormActivity", "Job ID: $job_id")
+        val freelance_id = intent.getIntExtra("freelance_id", -1)
+        val freelance_emp_id = intent.getIntExtra("Empid", -1)
+
+        Log.d("FreeLanceFormActivity", "Freelance ID: $freelance_id")
         setContent {
-            JobForm(job_id, this)
+            FreeLanceForm(freelance_id,freelance_emp_id, this)
         }
     }
 }
 
 @Composable
-fun JobForm(jobId: Int, activity: ComponentActivity) {
+fun FreeLanceForm(freelanceId: Int,freelance_emp_id:Int, activity: ComponentActivity) {
     val context = LocalContext.current
     var fields by remember { mutableStateOf<List<JobFieldDefinition>>(emptyList()) }
-    var emp_id by remember { mutableStateOf("") }
+    var creator_id by remember { mutableStateOf("") }
     val inputValues = remember { mutableStateMapOf<String, String>() }
     var uid by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
 
-    LaunchedEffect(jobId) {
+    LaunchedEffect(freelanceId) {
         uid = AppDatabase.getInstance(context).UserDao().getUid().toString()
-        emp_id = KtorClient.getEmpIdFromJobId(jobId).toString()
-        fields = KtorClient.getJobFormTemplate(jobId)
-        Log.d("JobForm", "Fields fetched: ${fields.size} fields")
+        creator_id = KtorClient.getFreelanceIdfromcreator(freelanceId.toString()).toString()
+        fields = KtorClient.getFreeLanceFormTemplate(freelanceId)
+        Log.d("FreeLanceForm", "Fields fetched: ${fields.size} fields")
     }
 
     Box(
@@ -83,9 +89,9 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        JobFormColors.LightYellow,
-                        JobFormColors.CreamWhite,
-                        JobFormColors.WarmWhite
+                        FreeLanceFormColors.LightYellow,
+                        FreeLanceFormColors.CreamWhite,
+                        FreeLanceFormColors.WarmWhite
                     )
                 )
             )
@@ -105,7 +111,7 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
                     .shadow(8.dp, RoundedCornerShape(16.dp)),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = JobFormColors.WarmWhite
+                    containerColor = FreeLanceFormColors.WarmWhite
                 )
             ) {
                 Column(
@@ -118,8 +124,8 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
                             .background(
                                 Brush.linearGradient(
                                     colors = listOf(
-                                        JobFormColors.PrimaryYellow,
-                                        JobFormColors.DarkYellow
+                                        FreeLanceFormColors.PrimaryYellow,
+                                        FreeLanceFormColors.DarkYellow
                                     )
                                 ),
                                 RoundedCornerShape(14.dp)
@@ -127,8 +133,8 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Menu,
-                            contentDescription = "Job Icon",
+                            imageVector = Icons.Default.Send,
+                            contentDescription = "Form Icon",
                             tint = Color.White,
                             modifier = Modifier.size(28.dp)
                         )
@@ -137,16 +143,16 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        "JOB APPLICATION FORM",
+                        "FREELANCE APPLICATION FORM",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = JobFormColors.DarkGray
+                        color = FreeLanceFormColors.DarkGray
                     )
 
                     Text(
                         "Fill out the details below to submit your application",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = JobFormColors.SoftGray,
+                        color = FreeLanceFormColors.SoftGray,
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
@@ -156,7 +162,7 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
 
             // Form Fields
             fields.forEach { field ->
-                ProfessionalJobInputField(field, inputValues)
+                ProfessionalFreeLanceInputField(field, inputValues)
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
@@ -167,30 +173,31 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
                     .shadow(6.dp, RoundedCornerShape(12.dp)),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = JobFormColors.WarmWhite
+                    containerColor = FreeLanceFormColors.WarmWhite
                 )
             ) {
                 Button(
                     onClick = {
-                        Log.d("JobForm", "Submit button clicked!")
+                        Log.d("FreeLanceForm", "Submit button clicked!")
                         CoroutineScope(Dispatchers.IO).launch {
                             val formJson = Json.encodeToString(inputValues.toMap())
-                            val details = UserAddFormDetails(
-                                emp_id = emp_id.toInt(),
-                                job_id = jobId,
+                            val details = KtorClient.FreelanceFormTemplateResponse(
+                                freelance_id = freelanceId,
+                                emp_id =freelance_emp_id ,
                                 user_id = uid.toInt(),
                                 field_details = formJson
                             )
 
-                            Log.d("JobForm", "Submitting details: $details")
-                            val res: String = KtorClient.detailAddJobForm(details)
+                            Log.d("FreeLanceForm", "Submitting details: $details")
+
+                            val res: String = KtorClient.detailAddFreeLanceForm(details)
 
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(context, res, Toast.LENGTH_SHORT).show()
 
                                 if (res.contains("form submitted successfully")) {
-                                    context.startActivity(Intent(context, JobsActivity::class.java))
-                                    activity.finish()
+                                    context.startActivity(Intent(context,FreeLance::class.java))
+                                    activity.finish() // Finish current activity to prevent back navigation
                                 }
                             }
                         }
@@ -199,8 +206,8 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
                         .fillMaxWidth()
                         .padding(16.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = JobFormColors.PrimaryYellow,
-                        contentColor = JobFormColors.DarkGray
+                        containerColor = FreeLanceFormColors.PrimaryYellow,
+                        contentColor = FreeLanceFormColors.DarkGray
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -228,7 +235,7 @@ fun JobForm(jobId: Int, activity: ComponentActivity) {
 }
 
 @Composable
-fun ProfessionalJobInputField(
+fun ProfessionalFreeLanceInputField(
     field: JobFieldDefinition,
     inputValues: MutableMap<String, String>
 ) {
@@ -240,7 +247,7 @@ fun ProfessionalJobInputField(
             .shadow(4.dp, RoundedCornerShape(12.dp)),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = JobFormColors.WarmWhite
+            containerColor = FreeLanceFormColors.WarmWhite
         )
     ) {
         Column(
@@ -255,7 +262,7 @@ fun ProfessionalJobInputField(
                     modifier = Modifier
                         .size(32.dp)
                         .background(
-                            JobFormColors.LightYellow,
+                            FreeLanceFormColors.LightYellow,
                             RoundedCornerShape(8.dp)
                         ),
                     contentAlignment = Alignment.Center
@@ -263,7 +270,7 @@ fun ProfessionalJobInputField(
                     Icon(
                         imageVector = getFieldIcon(field.type),
                         contentDescription = field.label,
-                        tint = JobFormColors.DarkYellow,
+                        tint = FreeLanceFormColors.DarkYellow,
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -275,13 +282,13 @@ fun ProfessionalJobInputField(
                         text = field.label,
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
-                        color = JobFormColors.DarkGray
+                        color = FreeLanceFormColors.DarkGray
                     )
                     if (field.label_text.isNotEmpty()) {
                         Text(
                             text = field.label_text,
                             style = MaterialTheme.typography.bodySmall,
-                            color = JobFormColors.SoftGray
+                            color = FreeLanceFormColors.SoftGray
                         )
                     }
                 }
@@ -306,13 +313,36 @@ fun ProfessionalJobInputField(
                         placeholder = {
                             Text(
                                 "Enter ${field.label.lowercase()}",
-                                color = JobFormColors.SoftGray
+                                color = FreeLanceFormColors.SoftGray
                             )
                         },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = JobFormColors.PrimaryYellow,
-                            focusedLabelColor = JobFormColors.DarkYellow,
-                            cursorColor = JobFormColors.DarkYellow
+                            focusedBorderColor = FreeLanceFormColors.PrimaryYellow,
+                            focusedLabelColor = FreeLanceFormColors.DarkYellow,
+                            cursorColor = FreeLanceFormColors.DarkYellow
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                }
+
+                "portfolio" -> {
+                    OutlinedTextField(
+                        value = input,
+                        onValueChange = {
+                            input = it
+                            inputValues[field.label] = it
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = {
+                            Text(
+                                "Paste your portfolio link",
+                                color = FreeLanceFormColors.SoftGray
+                            )
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = FreeLanceFormColors.PrimaryYellow,
+                            focusedLabelColor = FreeLanceFormColors.DarkYellow,
+                            cursorColor = FreeLanceFormColors.DarkYellow
                         ),
                         shape = RoundedCornerShape(8.dp)
                     )
@@ -322,7 +352,7 @@ fun ProfessionalJobInputField(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = JobFormColors.AccentGray
+                            containerColor = FreeLanceFormColors.AccentGray
                         ),
                         shape = RoundedCornerShape(8.dp)
                     ) {
@@ -338,14 +368,14 @@ fun ProfessionalJobInputField(
                                 Icon(
                                     imageVector = Icons.Default.Info,
                                     contentDescription = "Info",
-                                    tint = JobFormColors.SoftGray,
+                                    tint = FreeLanceFormColors.SoftGray,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     "(File upload will be implemented later)",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = JobFormColors.SoftGray,
+                                    color = FreeLanceFormColors.SoftGray,
                                     fontWeight = FontWeight.Medium
                                 )
                             }
@@ -386,8 +416,16 @@ fun getFieldIcon(fieldType: String): ImageVector {
     return when (fieldType.lowercase()) {
         "email" -> Icons.Default.Email
         "text" -> Icons.Default.Person
-        "number" -> Icons.Default.Menu
-        "file" -> Icons.Default.Add
+        "number" -> Icons.Default.Info
+        "portfolio" -> Icons.Default.Send
         else -> Icons.Default.Info
     }
 }
+
+// Data classes needed for the freelance form
+data class FreeLanceFieldDefinition(
+    val label: String,
+    val label_text: String,
+    val type: String,
+    val required: Boolean
+)

@@ -1,5 +1,6 @@
 package com.example.rbc_app.BottomNav
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -31,15 +32,16 @@ import com.example.rbc_app.BottomNav.Screens.ProfileScreen
 class BottomNavigationActivity : ComponentActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val shrd = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).getString("Type","def")
         setContent(){
-            BottomNavBar()
+            BottomNavBar(shrd)
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomNavBar(){
+fun BottomNavBar(shrd:String?){
     var navigationSelectedItem by remember{
         mutableStateOf(0)
     }
@@ -95,10 +97,10 @@ fun BottomNavBar(){
                CareerOpportunitiesScreen(navController) //call our composable screens here
             }
             composable(RoutesSealedClass.FreeLance.route) {
-                FreeLanceScreen(navController) //call our composable screens here
+                FreeLanceScreen(navController,shrd) //call our composable screens here
             }
             composable(RoutesSealedClass.Profile.route) {
-                ProfileScreen(navController)//call our composable screens here
+                ProfileScreen(navController,shrd)//call our composable screens here
             }
 //            composable(RoutesSealedClass.Jobs.route) {
 //                JobsScreen(navController)//call our composable screens here
@@ -116,5 +118,5 @@ fun BottomNavBar(){
 @Preview(showBackground = true)
 @Composable
 fun BottomNavBarPreview() {
-    BottomNavBar()
+    BottomNavBar("hi")
 }

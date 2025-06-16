@@ -1,5 +1,6 @@
 package com.example.rbc_app.login
 
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -20,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.rbc_app.BottomNav.BottomNavigationActivity
 import com.example.rbc_app.R
+import com.example.rbc_app.RoomDatabase.AppDatabase
+import com.example.rbc_app.RoomDatabase.UserCache
 import kotlinx.coroutines.*
 
 class LoginEmployer : ComponentActivity() {
@@ -89,8 +92,44 @@ class LoginEmployer : ComponentActivity() {
                         withContext(Dispatchers.Main) {
                             loginMessage = response
                             Toast.makeText(this@LoginEmployer, response, Toast.LENGTH_SHORT).show()
-                            if(loginMessage.contains("Login successful"))
-                                context.startActivity(Intent(context, BottomNavigationActivity::class.java))
+                            if(loginMessage.contains("Login successful")) { //new
+
+                                val sharedPref = getSharedPreferences("MyPrefs",Context.MODE_PRIVATE)
+                                val editor = sharedPref.edit()
+                                editor.putString("Type","Employer")
+                                withContext(Dispatchers.IO) {
+                                    val db = AppDatabase.getInstance(context)
+                                    val userDao = db.UserDao()
+
+                                    // Clear existing users
+                                    for(user in userDao.getAll())
+                                    {
+                                        userDao.delete(user)
+                                    }
+
+                                    // Insert new user
+                                    userDao.insertUser(
+                                        UserCache(
+                                            firstName = email,
+                                            lastname = password,
+                                            User_id = KtorClient.getUserIdEmployer(email),
+                                            savedJobs = "",
+                                            savedInternships="",
+                                            savedFreeLance = "",
+                                            email = "RBC@gmail.com",
+                                            phone = "+919876543210"
+                                        )
+
+                                    )
+                                }
+
+                                context.startActivity(
+                                    Intent(
+                                        context,
+                                        BottomNavigationActivity::class.java
+                                    )
+                                )
+                            }
                         }
                     }
                 },

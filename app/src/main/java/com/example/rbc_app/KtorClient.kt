@@ -1,12 +1,12 @@
 
-import android.media.Image
 import android.net.Uri
 import android.util.Log
 import com.example.rbc_app.Employer
+import com.example.rbc_app.JobFormActivities.InternshipFieldDefinition
 import com.example.rbc_app.JobFormActivities.JobFieldDefinition
 import com.example.rbc_app.JobFormActivities.UserAddFormDetails
+import com.example.rbc_app.JobFormActivities.UserAddFormDetailsInternships
 import com.example.rbc_app.LocalDateTimeSerializer
-import com.example.rbc_app.OtpModel
 import com.example.rbc_app.User
 import io.ktor.client.*
 import io.ktor.client.call.body
@@ -14,13 +14,13 @@ import io.ktor.client.engine.android.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.client.utils.EmptyContent.contentType
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.jetbrains.exposed.sql.transactions.transaction
+import java.net.URLEncoder
 import java.time.LocalDateTime
 
 object KtorClient {
@@ -28,7 +28,10 @@ object KtorClient {
         install(ContentNegotiation) { json() }
     }
 
-    private const val BASE_URL = "http://10.0.2.2:8080"  // Use 10.0.2.2 for Emulator
+//    private const val BASE_URL = "https://d7f5-103-169-154-59.ngrok-free.app"
+
+    //local server
+      private const val BASE_URL = "https://rbc-server-app.onrender.com" // Use 10.0.2.2 for Emulator
     @Serializable
     data class UserRequest(val email: String, val password: String)
 
@@ -47,6 +50,7 @@ object KtorClient {
 
     @Serializable
     data class internshipforCard(
+        val internship_id:Int,
         val Name : String,
         val internshipDesc : String,
         val companyName : String,
@@ -113,7 +117,89 @@ object KtorClient {
         val freelance_id:Int
     )
 
-    suspend fun sendJobRowToAdd(jobRow:addJob):Boolean{
+    @Serializable
+    data class formTemplate(
+        var emp_id:Int?,
+        var job_id:Int,
+        var fields:List<JobFieldDefinition>
+    )
+
+    @Serializable
+    data class InternshipformTemplate(
+        var emp_id:Int?,
+        var internship_id:Int,
+        var fields:List<InternshipFieldDefinition>
+    )
+
+    @Serializable
+    data class FreelanceFormTemplate(
+        val freelance_id: Int,
+        val user_id: Int,
+        val fields: List<FreelanceFieldDefinition>
+    )
+
+    @Serializable
+    data class FreelanceFieldDefinition(
+        val label: String,
+        val label_text: String,
+        val type: String,
+        val isRequired: Boolean
+    )
+
+    @Serializable
+    data class FreelanceFormTemplateResponse(
+        val freelance_id: Int,
+        val emp_id:Int,
+        val user_id: Int,
+        val field_details: String
+    )
+
+    //function to add the new form
+    suspend fun addJobForm(formTemp:formTemplate):Boolean{
+        return try{
+            val response:HttpResponse=client.post("$BASE_URL/createJobForm"){
+                contentType(ContentType.Application.Json)
+                setBody(formTemp)
+            }
+            true
+        }catch(e:Exception){
+            Log.d("JOB_FORM","Form not added")
+            false
+        }
+    }
+
+    suspend fun addInternshipForm(formTemp: InternshipformTemplate): Boolean {
+        return try {
+            val response: HttpResponse = client.post("$BASE_URL/createInternshipForm") {
+                contentType(ContentType.Application.Json)
+                setBody(formTemp)
+            }
+            true
+        } catch (e: Exception) {
+            Log.d("INTERN_FORM", "Form not added")
+            false
+        }
+    }
+
+
+    suspend fun addFreelanceForm(formTemplate: FreelanceFormTemplate): Boolean {
+        return try {
+            val response: HttpResponse = client.post("$BASE_URL/createFreelanceForm") {
+                contentType(ContentType.Application.Json)
+                setBody(formTemplate)
+            }
+            if(response.status.isSuccess())
+            true
+
+            else
+                false
+        } catch (e: Exception) {
+            Log.d("FREELANCE_FORM", "Freelance form not added", e)
+            false
+        }
+    }
+    
+    suspend fun sendJobRowToAdd(jobRow:addJob):Int{
         return try{
             val response:HttpResponse=client.post("$BASE_URL/addRowJob"){
                 contentType(ContentType.Application.Json)
@@ -121,37 +207,38 @@ object KtorClient {
             }
             if(response.status.isSuccess()){
                 Log.d("Job added", "Response Status: ${response}")
-                true
+                response.body<Int>()
             }else{
                 Log.d("Job not added", "Response Status: ${response}")
-                false}
+                -1}
         }catch(e:Exception){
-            Log.e("sending failed error", "Exception: ${e.message}")
-            false
+            -1
         }
     }
 
-    suspend fun sendInternRowToAdd(Intern:addInternship):Boolean{
-        return try{
-            val response:HttpResponse=client.post("$BASE_URL/addInternshipRow"){
+    suspend fun sendInternRowToAdd(internRow: addInternship): Int {
+        return try {
+            val response: HttpResponse = client.post("$BASE_URL/addInternshipRow") {
                 contentType(ContentType.Application.Json)
-                setBody(Intern)
+                setBody(internRow)
             }
-            if(response.status.isSuccess()){
-                Log.d("Internship added", "Response Status: ${response}")
-                true
-            }else{
-                Log.d("Internship not added", "Response Status: ${response}")
-                false}
-        }catch(e:Exception){
-            Log.e("sending failed error", "Exception: ${e.message}")
-            false
+            if (response.status.isSuccess()) {
+                Log.d("Internship added", "Response Status: $response")
+                response.body<Int>()
+            } else {
+                Log.d("Internship not added", "Response Status: $response")
+                -1
+            }
+        } catch (e: Exception) {
+            Log.e("Sending failed error", "Exception: ${e.message}")
+            -1
         }
     }
+
 
 
     // all the functions for freelance part
-    suspend fun sendFreelanceRow(freelancejoborow: Freelance): Boolean {
+    suspend fun sendFreelanceRow(freelancejoborow: Freelance): Int {
         return try {
 
             Log.d("FreelanceData", "Received Freelance: $freelancejoborow")
@@ -161,16 +248,14 @@ object KtorClient {
                 contentType(ContentType.Application.Json)
                 setBody(freelancejoborow)
             }
-            if (response.status.isSuccess()) {
-                Log.d("Freelance added", "Response Status: ${response.status}")
-                true
-            } else {
-                Log.d("FreeLance_not added", "Response Status: ${response}")
-                false  // Explicitly return false
-            }
-        } catch (e: Exception) {
-            Log.e("sending failed error", "Exception: ${e.message}")
-            false
+            if(response.status.isSuccess()){
+                Log.d("FreeLanceWork added", "Response Status: ${response}")
+                response.body<Int>()
+            }else{
+                Log.d("FreeLanceWork not added", "Response Status: ${response}")
+                -1}
+        }catch(e:Exception){
+            -1
         }
     }
 
@@ -337,8 +422,6 @@ object KtorClient {
         }
     }
 
-
-
     suspend fun loginseeker(email: String,password: String): String {
         return try {
             val response: HttpResponse = client.post("$BASE_URL/loginseeker") {
@@ -356,7 +439,6 @@ object KtorClient {
             "Error: ${e.localizedMessage}"
         }
     }
-
 
     suspend fun loginemployer(email: String,password: String): String {
         return try {
@@ -510,10 +592,19 @@ object KtorClient {
         }
     }
 
-    suspend fun getUserId(email: String) : Int {
+    suspend fun getUserIdSeeker(email: String) : Int {
         val encodedEmail = Uri.encode(email)
         return try{
-            client.get("$BASE_URL/getUidForRoom/$encodedEmail").body()
+            client.get("$BASE_URL/getUidForRoomSeeker/$encodedEmail").body()
+        }catch(e:Exception){
+            -1
+        }
+    }
+
+    suspend fun getUserIdEmployer(email: String) : Int {
+        val encodedEmail = Uri.encode(email)
+        return try{
+            client.get("$BASE_URL/getUidForRoomEmployer/$encodedEmail").body()
         }catch(e:Exception){
             -1
         }
@@ -526,6 +617,15 @@ object KtorClient {
             -1
         }
     }
+
+    suspend fun getEmpIdFromInternshipId(internshipId: Int): Int {
+        return try {
+            client.get("$BASE_URL/getUidEmployerFromInternshipId/$internshipId").body()
+        } catch (e: Exception) {
+            -1
+        }
+    }
+
 
 //    suspend fun getJobFormTemplate(jobId: Int):List<JobFieldDefinition>{
 //        return try{ val template :String= client.get("$BASE_URL/getJobFormTemplate/$jobId")
@@ -567,5 +667,90 @@ object KtorClient {
             "Error: ${e.message}"
         }
     }
+
+    suspend fun detailAddInternshipForm(internshipFormDetails: UserAddFormDetailsInternships): String {
+        return try {
+            val response: String = client.post("$BASE_URL/addDataForInternshipForm") {
+                contentType(ContentType.Application.Json)
+                setBody(internshipFormDetails)
+            }.bodyAsText()
+            response
+        } catch (e: Exception) {
+            Log.e("InternshipFormSubmit", "Error: ${e.message}")
+            "Error: ${e.message}"
+        }
+    }
+
+
+    suspend fun getFreelanceIdfromcreator(creator_email: String): Int {
+        return try {
+            val encodedEmail = URLEncoder.encode(creator_email, "UTF-8")
+            val response: String = client.get("$BASE_URL/getFreelanceId/$encodedEmail").bodyAsText()
+            Log.d("freelanceId", "Raw response: '$response'")
+
+            response.trim().toInt()
+        } catch (e: Exception) {
+            Log.e("freelanceIdError", "Failed to fetch or parse freelance ID", e)
+            -1
+        }
+    }
+
+    suspend fun getEmpIdfromcreator(creator_email: String): Int {
+        return try {
+            val encodedEmail = URLEncoder.encode(creator_email, "UTF-8")
+            val response: String = client.get("$BASE_URL/getEmpid/$encodedEmail").bodyAsText()
+            Log.d("freelanceId", "Raw response: '$response'")
+
+            response.trim().toInt()
+        } catch (e: Exception) {
+            Log.e("freelanceIdError", "Failed to fetch or parse freelance ID", e)
+            -1
+        }
+    }
+
+    suspend fun getFreeLanceFormTemplate(freelanceId: Int): List<JobFieldDefinition> {
+        return try {
+            val response: String = client.get("$BASE_URL/getfreelancetemplate/$freelanceId").bodyAsText()
+            Log.d("RAW DATA TEMPLATE", response)
+
+            val parsed = Json.decodeFromString<List<JobFieldDefinition>>(response)
+            Log.d("Deserialized freelance fields:", parsed.toString())
+
+            parsed
+        } catch (e: Exception) {
+            Log.e("TEMPLATE ERROR", "Failed to fetch or parse template", e)
+            emptyList()
+        }
+    }
+
+    suspend fun detailAddFreeLanceForm(details: FreelanceFormTemplateResponse): String {
+        return try{
+            val response:String =client.post("$BASE_URL/addDataForFormfreelance"){
+                contentType(ContentType.Application.Json)
+                setBody(details)
+            }.bodyAsText()
+            response
+        }catch (e:Exception){
+            Log.e("FormSubmit", "Error: ${e.message}")
+            "Error: ${e.message}"
+        }    }
+
+    suspend fun getInternshipFormTemplate(internshipId: Int): List<InternshipFieldDefinition> {
+        return try {
+            val response: String = client.get("$BASE_URL/getInternshipFormTemplate/$internshipId").bodyAsText()
+            Log.d("RAW DATA TEMPLATE", response)
+
+            val parsed = Json.decodeFromString<List<InternshipFieldDefinition>>(response)
+            Log.d("Deserialized internship fields:", parsed.toString())
+
+            parsed
+        } catch (e: Exception) {
+            Log.e("TEMPLATE ERROR", "Failed to fetch or parse internship template", e)
+            emptyList()
+        }
+    }
+
+
+
 }
 
